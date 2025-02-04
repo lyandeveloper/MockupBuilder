@@ -1,95 +1,56 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+
+import CustomCollapse from '@/components/CustomCollapse';
+import CustomizedSlider from '@/components/CustomSlider';
+import { Menu } from '@mui/icons-material';
+import { IconButton } from '@mui/material';
+import { useState } from 'react';
+import styles from './page.module.css';
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [rotX, setRotX] = useState(0);
+  const [rotY, setRotY] = useState(0);
+  const [rotZ, setRotZ] = useState(0);
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+  return (
+    <main className={styles.main}>
+      <aside className={styles.sidebar}>
+        <div className={styles.header}>
+          <IconButton>
+            <Menu style={{ color: "#FFF" }} />
+          </IconButton>
+          <span className={styles.title}>Mockup Builder</span>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className={styles.content}>
+          <CustomCollapse title='Landing Page'>
+            <div className={styles.field_group}>
+              <span className={styles.title}>Rotation</span><br /><br />
+              <CustomizedSlider
+                label="x"
+                value={rotX}
+                onChange={(event, value) => setRotX(typeof value === 'number' ? value : 0)}
+              />
+              <CustomizedSlider
+                label="y"
+                value={rotY}
+                onChange={(event, value) => setRotY(typeof value === 'number' ? value : 0)}
+              />
+              <CustomizedSlider
+                label="z"
+                value={rotZ}
+                onChange={(event, value) => setRotZ(typeof value === 'number' ? value : 0)}
+              />
+            </div>
+          </CustomCollapse>
+        </div>
+      </aside>
+      <section className={styles.viewport}>
+        <div
+          className={styles.object}
+          style={{ transform: `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)` }}
+        ></div>
+      </section>
+
+    </main>
   );
 }

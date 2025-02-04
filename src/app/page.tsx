@@ -1,12 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import CustomCollapse from '@/components/CustomCollapse';
 import CustomizedSlider from '@/components/CustomSlider';
-import { Menu } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
-import { useState } from 'react';
-import styles from './page.module.css';
+import { Image, Save } from '@mui/icons-material';
+import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
+import { useRef, useState } from 'react';
 import ColorPicker from 'react-best-gradient-color-picker';
+import styles from './page.module.css';
 
 export default function Home() {
   const [rotX, setRotX] = useState(0);
@@ -18,16 +19,38 @@ export default function Home() {
   const [locZ, setLocZ] = useState(0);
 
   const [color, setColor] = useState('linear-gradient(90deg, rgba(27,27,28,1) 0%, RGB(33, 33, 33) 100%)');
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  console.log(color)
+  const [image, setImage] = useState<string | null>(null);
+  const [imageSize, setImageSize] = useState<{ width: number; height: number } | null>(null);
+  const [scale, setScale] = useState(100);
+
+  const handleImportImage = () => {
+    // Dispara o clique no input de arquivo
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string); // Define a imagem como base64
+        console.log(reader.result)
+      };
+      reader.readAsDataURL(file); // Lê o arquivo como uma URL base64
+    }
+  };
+
+  const handleImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget; // Pega largura e altura originais
+    setImageSize({ width: naturalWidth / window.innerWidth, height: naturalHeight / window.innerHeight });
+  };
 
   return (
     <main className={styles.main}>
       <aside className={styles.sidebar}>
-        <div className={styles.header}>
-          <IconButton>
-            <Menu style={{ color: "#FFF" }} />
-          </IconButton>
+        <div className={styles.header}> 
           <span className={styles.title}>Mockup Builder</span>
         </div>
         <div className={styles.content}>
@@ -54,13 +77,13 @@ export default function Home() {
               />
               <CustomizedSlider
                 label="y"
-                value={rotY}
-                onChange={(event, value) => setRotY(typeof value === 'number' ? value : 0)}
+                value={rotZ}
+                onChange={(event, value) => setRotZ(typeof value === 'number' ? value : 0)}
               />
               <CustomizedSlider
                 label="z"
-                value={rotZ}
-                onChange={(event, value) => setRotZ(typeof value === 'number' ? value : 0)}
+                value={rotY}
+                onChange={(event, value) => setRotY(typeof value === 'number' ? value : 0)}
               />
             </div>
 
@@ -81,20 +104,55 @@ export default function Home() {
                 value={locZ}
                 onChange={(event, value) => setLocZ(typeof value === 'number' ? value : 0)}
               />
-            </div>
+            </div> 
+
+            <div className={styles.field_group}>
+              <span className={styles.title}>Scale</span><br /><br />
+              <CustomizedSlider
+                label="size"
+                value={scale}
+                onChange={(event, value) => setScale(typeof value === 'number' ? value : 100)}
+              />
+            </div> 
           </CustomCollapse>
         </div>
       </aside>
       <section className={styles.viewport} style={{ background: color }}>
-        <div
+        <img
+          src={image}
           className={styles.object}
           style={{
-            transform: `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translate3d(${locX}px, ${locY}px, ${locZ}px)`,
-          }}
-        ></div>
+            transform: `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg) translate3d(${locX}px, ${locY}px, ${locZ}px) scale(${scale / 100})`,
+          }} 
+          alt=""
+        ></img>
 
       </section>
+      <SpeedDial
+        ariaLabel="SpeedDial basic example"
+        sx={{ position: 'absolute', bottom: 16, right: 16 }}
+        icon={<SpeedDialIcon />}
+      > 
+        <SpeedDialAction
+            key="Save"
+            icon={<Save/>}
+            tooltipTitle="Save"
+        /> 
+        <SpeedDialAction
+          key="Import Image"
+          icon={<Image/>}
+          tooltipTitle="Import Image"
+            onClick={handleImportImage}
+        /> 
+      </SpeedDial>
 
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
     </main>
   );
 }

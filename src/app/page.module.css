@@ -84,6 +84,7 @@
   }
 
   .field_group {
+    margin-bottom: 2cqmin;
     .title {
       font-weight: bold;
     }

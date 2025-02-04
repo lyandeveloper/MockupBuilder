@@ -18,10 +18,12 @@ function ValueLabelComponent(props: SliderValueLabelProps) {
 type CustomSliderTypes = {
     label: string;
     value: number;
+    min?: number;
+    max?: number;
     onChange: (event: Event, value: number | number[]) => void;
 }
 
-export default function CustomizedSlider({ label, value, onChange }: CustomSliderTypes) {
+export default function CustomizedSlider({ label, value, min, max, onChange }: CustomSliderTypes) {
   return (
     <Box>
       <Typography style={{ fontSize: '0.8rem' }} gutterBottom>{label}</Typography>
@@ -36,8 +38,8 @@ export default function CustomizedSlider({ label, value, onChange }: CustomSlide
         shiftStep={30}
         step={10}
         marks
-        min={0}
-        max={360}
+        min={min}
+        max={max}
         value={typeof value === 'number' ? value : 0}
         onChange={onChange}
       />

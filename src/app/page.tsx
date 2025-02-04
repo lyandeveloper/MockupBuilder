@@ -6,6 +6,7 @@ import { Menu } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { useState } from 'react';
 import styles from './page.module.css';
+import ColorPicker from 'react-best-gradient-color-picker';
 
 export default function Home() {
   const [rotX, setRotX] = useState(0);
@@ -15,6 +16,10 @@ export default function Home() {
   const [locX, setLocX] = useState(0);
   const [locY, setLocY] = useState(0);
   const [locZ, setLocZ] = useState(0);
+
+  const [color, setColor] = useState('linear-gradient(90deg, rgba(27,27,28,1) 0%, RGB(33, 33, 33) 100%)');
+
+  console.log(color)
 
   return (
     <main className={styles.main}>
@@ -26,6 +31,19 @@ export default function Home() {
           <span className={styles.title}>Mockup Builder</span>
         </div>
         <div className={styles.content}>
+          <CustomCollapse title='Background'> 
+            <ColorPicker 
+              value={color} 
+              onChange={setColor} 
+              width={220} 
+              height={150}
+              hidePresets={true} 
+              hideAdvancedSliders={true} 
+              hideColorGuide={true}
+              className={styles.color_picker} 
+              disableLightMode={true}
+            />
+          </CustomCollapse>
           <CustomCollapse title='Landing Page'>
             <div className={styles.field_group}>
               <span className={styles.title}>Rotation</span><br /><br />
@@ -67,7 +85,7 @@ export default function Home() {
           </CustomCollapse>
         </div>
       </aside>
-      <section className={styles.viewport}>
+      <section className={styles.viewport} style={{ background: color }}>
         <div
           className={styles.object}
           style={{

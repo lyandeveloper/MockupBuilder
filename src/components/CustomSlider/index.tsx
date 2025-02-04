@@ -1,3 +1,5 @@
+'use client'
+
 import Box from '@mui/material/Box';
 import Slider, { SliderValueLabelProps } from '@mui/material/Slider';
 import Tooltip from '@mui/material/Tooltip';

@@ -50,6 +50,8 @@
   flex-direction: column;
   color: #fff;
   align-items: start;
+  overflow-y: auto;
+  overflow-x: hidden;
 
   .header {
     display: flex;
@@ -84,10 +86,15 @@
   }
 
   .field_group {
-    margin-bottom: 2cqmin;
+    margin-bottom: 2rem;
     .title {
       font-weight: bold;
     }
   }
+ 
+
+  
 }
+
+
 

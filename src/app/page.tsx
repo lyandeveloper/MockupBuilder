@@ -10,8 +10,17 @@ import ColorPicker from 'react-best-gradient-color-picker';
 import styles from './page.module.css';
 
 export default function Home() {
+  const [shadow, setShadow] = useState(false);
   const [color, setColor] = useState('linear-gradient(90deg, rgba(27,27,28,1) 0%, RGB(33, 33, 33) 100%)');
+  const [shadowColor, setShadowColor] = useState<string>("#000000"); // Cor inicial em HEX
+  const [rgbColor, setRgbColor] = useState<string>("0, 0, 0");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [shadowPosX, setShadowPosX] = useState(0);
+  const [shadowPosY, setShadowPosY] = useState(0);
+  const [shadowBlur, setShadowBlur] = useState(20);
+  const [shadowSpread, setShadowSpread] = useState(4);
+  const [shadowOpacity, setShadowOpacity] = useState(1);
 
   const [images, setImages] = useState<
     {
@@ -27,7 +36,6 @@ export default function Home() {
   >([]); 
 
   const handleImportImage = () => {
-    // Dispara o clique no input de arquivo
     fileInputRef.current?.click();
   };
 
@@ -64,6 +72,19 @@ export default function Home() {
         i === index ? { ...image, [property]: value } : image
       )
     );
+  };
+
+  const hexToRgb = (hex: string) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
+  };
+
+  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const hex = event.target.value;
+    setShadowColor(hex);
+    setRgbColor(hexToRgb(hex)); // Converte para RGB
   };
 
 const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -172,12 +193,59 @@ useEffect(() => {
               <div className={styles.field_group}>
                 <span className={styles.title}>Scale</span><br /><br />
                 <CustomizedSlider
-                  label="Scale"
+                  label=""
                   value={image.scale}
                   onChange={(event, value) =>
                     updateImageProperty(index, "scale", typeof value === "number" ? value : 100)
                   }
                 />
+              </div>
+
+              <div className={styles.field_group}>
+                <span className={styles.title}>Effects</span><br /><br />
+                <div className={styles.input_check}>
+                  <label htmlFor="check">Shadow?</label>
+                  <input type="checkbox" name="checkbox" id="checkbox" value={String(shadow)} onChange={() => setShadow(!shadow)} />
+                </div>
+                {Boolean(shadow) === true && 
+                  <>
+                    <div className={styles.field_group} style={{ marginTop: 20 }}>
+                  <span className={styles.title}>Position</span>
+                  <div className={styles.input} style={{ marginTop: 10 }}>
+                    <label htmlFor="check">X</label>
+                    <input type="number" name="shadowPosX" id="shadowPosX" value={shadowPosX} onChange={e => setShadowPosX(Number(e.target.value))} />
+                  </div>
+                  <div className={styles.input}>
+                    <label htmlFor="check">Y</label>
+                    <input type="number" name="shadowPosY" id="shadowPosY" value={shadowPosY} onChange={e => setShadowPosY(Number(e.target.value))} />
+                  </div>
+                </div>
+                <div className={styles.field_group}>
+                  <span className={styles.title}>Blur</span>
+                  <div className={styles.input}>
+                    <input type="number" name="shadowBlur" id="shadowBlur" value={shadowBlur} onChange={e => setShadowBlur(Number(e.target.value))} />
+                  </div>
+                </div>
+                <div className={styles.field_group}>
+                  <span className={styles.title}>Spread</span>
+                  <div className={styles.input}>
+                    <input type="number" name="shadowSpread" id="shadowSpread" value={shadowSpread} onChange={e => setShadowSpread(Number(e.target.value))} />
+                  </div>
+                </div>
+                <div className={styles.field_group}>
+                  <span className={styles.title}>Opacity</span>
+                  <div className={styles.input}>
+                    <input type="number" name="shadowOpacity" id="shadowOpacity" value={shadowOpacity} onChange={e => setShadowOpacity(Number(e.target.value))} />
+                  </div>
+                </div>
+                <div className={styles.field_group}>
+                  <span className={styles.title}>Color</span>
+                  <div className={styles.input}>
+                    <input type="color" name="shadowColor" id="shadowColor" value={shadowColor} onChange={handleColorChange} />
+                  </div>
+                </div>
+                  </>
+                }
               </div>
             </CustomCollapse>
           ))}
@@ -192,6 +260,7 @@ useEffect(() => {
             className={styles.object}
             style={{
               transform: `rotateX(${image.rotX}deg) rotateY(${image.rotY}deg) rotateZ(${image.rotZ}deg) translate3d(${image.locX}px, ${image.locY}px, ${image.locZ}px) scale(${image.scale / 100})`,
+              boxShadow: shadow ? `${shadowPosX}px ${shadowPosY}px ${shadowBlur}px ${shadowSpread}px rgba(${rgbColor}, ${shadowOpacity})` : 'none'
             }}
             alt=""
           ></img>

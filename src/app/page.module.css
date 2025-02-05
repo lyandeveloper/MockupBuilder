@@ -12,7 +12,7 @@
   align-items: center;
   justify-content: center;
   position: relative;
-  perspective: 800px;
+  perspective: 900px;
 
   .object {
     max-width: 100%;
@@ -86,12 +86,26 @@
 
   .field_group {
     margin-bottom: 2rem;
+
     .title {
       font-weight: bold;
     }
-  }
- 
 
+    .input_check {
+      display: flex;
+      align-items: center;
+
+      label {
+        margin-right: 0.5rem;
+      }
+    }
+
+    .input {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+  }
   
 }
 

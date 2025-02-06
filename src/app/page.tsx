@@ -8,19 +8,13 @@ import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import ColorPicker from 'react-best-gradient-color-picker';
 import styles from './page.module.css';
+import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 
 export default function Home() {
   const [shadow, setShadow] = useState(false);
   const [color, setColor] = useState('linear-gradient(90deg, rgba(27,27,28,1) 0%, RGB(33, 33, 33) 100%)');
-  const [shadowColor, setShadowColor] = useState<string>("#000000"); // Cor inicial em HEX
   const [rgbColor, setRgbColor] = useState<string>("0, 0, 0");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [shadowPosX, setShadowPosX] = useState(0);
-  const [shadowPosY, setShadowPosY] = useState(0);
-  const [shadowBlur, setShadowBlur] = useState(20);
-  const [shadowSpread, setShadowSpread] = useState(4);
-  const [shadowOpacity, setShadowOpacity] = useState(1);
 
   const [images, setImages] = useState<
     {
@@ -32,8 +26,14 @@ export default function Home() {
       locY: number;
       locZ: number;
       scale: number;
+      shadowPosX: number;
+      shadowPosY: number;
+      shadowBlur: number;
+      shadowSpread: number;
+      shadowOpacity: number;
+      shadowColor: string;
     }[]
-  >([]); 
+  >([]);
 
   const handleImportImage = () => {
     fileInputRef.current?.click();
@@ -55,6 +55,12 @@ export default function Home() {
             locY: 0,
             locZ: 0,
             scale: 100,
+            shadowPosX: 0,
+            shadowPosY: 0,
+            shadowBlur: 20,
+            shadowSpread: 5,
+            shadowOpacity: 1,
+            shadowColor: "0,0,0"
           },
         ]);
       };
@@ -62,16 +68,15 @@ export default function Home() {
     }
   };
 
-  const updateImageProperty = (
-    index: number,
-    property: keyof typeof images[0],
-    value: number
-  ) => {
-    setImages((prevImages) =>
-      prevImages.map((image, i) =>
-        i === index ? { ...image, [property]: value } : image
-      )
-    );
+  const updateImageProperty = (index: number, property: string, value: number | string) => {
+    setImages((prevImages) => {
+      const updatedImages = [...prevImages];
+      updatedImages[index] = {
+        ...updatedImages[index],
+        [property]: value,
+      };
+      return updatedImages;
+    });
   };
 
   const hexToRgb = (hex: string) => {
@@ -83,176 +88,288 @@ export default function Home() {
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const hex = event.target.value;
-    setShadowColor(hex);
-    setRgbColor(hexToRgb(hex)); // Converte para RGB
+    console.log(hexToRgb(hex))
+    return hexToRgb(hex); // Converte para RGB
   };
 
-const viewportRef = useRef<HTMLDivElement | null>(null);
-const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
 
-useEffect(() => {
-  const updateViewportSize = () => {
-    if (viewportRef.current) {
-      const { width, height } = viewportRef.current.getBoundingClientRect();
-      setViewportSize({ width, height });
-    }
-  };
+  useEffect(() => {
+    const updateViewportSize = () => {
+      if (viewportRef.current) {
+        const { width, height } = viewportRef.current.getBoundingClientRect();
+        setViewportSize({ width, height });
+      }
+    };
 
-  // Atualizar as dimensões ao montar o componente
-  updateViewportSize();
+    // Atualizar as dimensões ao montar o componente
+    updateViewportSize();
 
-  // Atualizar as dimensões ao redimensionar a janela
-  window.addEventListener('resize', updateViewportSize);
-  return () => window.removeEventListener('resize', updateViewportSize);
-}, []);
+    // Atualizar as dimensões ao redimensionar a janela
+    window.addEventListener('resize', updateViewportSize);
+    return () => window.removeEventListener('resize', updateViewportSize);
+  }, []);
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} style={{ background: color }}>
       <aside className={styles.sidebar}>
         <div className={styles.header}>
           <span className={styles.title}>Mockup Builder</span>
         </div>
         <div className={styles.content}>
-          <CustomCollapse title='Background'>
-            <ColorPicker
-              value={color}
-              onChange={setColor}
-              width={220}
-              height={150}
-              hidePresets={true}
-              hideAdvancedSliders={true}
-              hideColorGuide={true}
-              className={styles.color_picker}
-              disableLightMode={true}
-            />
-          </CustomCollapse>
-          {images.map((image, index) => (
-            <CustomCollapse title={`Image ${index + 1}`} key={index}>
-              <div className={styles.field_group}>
-                <span className={styles.title}>Rotation</span><br /><br />
-                <CustomizedSlider
-                  label="X"
-                  min={-360}
-                  max={360}
-                  value={image.rotX}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "rotX", typeof value === "number" ? value : 0)
-                  }
-                />
-                <CustomizedSlider
-                  label="Y"
-                  value={image.rotY}
-                  min={-360}
-                  max={360}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "rotY", typeof value === "number" ? value : 0)
-                  }
-                />
-                <CustomizedSlider
-                  label="Z"
-                  value={image.rotZ}
-                  min={-360}
-                  max={360}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "rotZ", typeof value === "number" ? value : 0)
-                  }
-                />
-              </div>
-
-              <div className={styles.field_group}>
-                <span className={styles.title}>Location</span><br /><br />
-                <CustomizedSlider
-                  label="X"
-                  value={image.locX}
-                  min={-viewportSize.width / 4}
-                  max={viewportSize.width / 4}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "locX", typeof value === "number" ? value : 0)
-                  }
-                />
-                <CustomizedSlider
-                  label="Y"
-                  value={image.locY}
-                  min={-viewportSize.height / 4}
-                  max={viewportSize.height / 4}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "locY", typeof value === "number" ? value : 0)
-                  }
-                />
-                <CustomizedSlider
-                  label="Z"
-                  value={image.locZ}
-                  min={-viewportSize.width / 2}
-                  max={viewportSize.width / 2}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "locZ", typeof value === "number" ? value : 0)
-                  }
-                />
-              </div>
-
-              <div className={styles.field_group}>
-                <span className={styles.title}>Scale</span><br /><br />
-                <CustomizedSlider
-                  label=""
-                  value={image.scale}
-                  onChange={(event, value) =>
-                    updateImageProperty(index, "scale", typeof value === "number" ? value : 100)
-                  }
-                />
-              </div>
-
-              <div className={styles.field_group}>
-                <span className={styles.title}>Effects</span><br /><br />
-                <div className={styles.input_check}>
-                  <label htmlFor="check">Shadow?</label>
-                  <input type="checkbox" name="checkbox" id="checkbox" value={String(shadow)} onChange={() => setShadow(!shadow)} />
-                </div>
-                {Boolean(shadow) === true && 
-                  <>
-                    <div className={styles.field_group} style={{ marginTop: 20 }}>
-                  <span className={styles.title}>Position</span>
-                  <div className={styles.input} style={{ marginTop: 10 }}>
-                    <label htmlFor="check">X</label>
-                    <input type="number" name="shadowPosX" id="shadowPosX" value={shadowPosX} onChange={e => setShadowPosX(Number(e.target.value))} />
+          <SimpleTreeView>
+            <TreeItem itemId='background' label={<span style={{ fontSize: "0.8rem"}}>Background</span>}>
+              <ColorPicker
+                value={color}
+                onChange={setColor}
+                width={220}
+                height={150}
+                hidePresets={true}
+                hideAdvancedSliders={true}
+                hideColorGuide={true}
+                className={styles.color_picker}
+                disableLightMode={true}
+              />
+            </TreeItem>
+            {images.map((image, index) => (
+              <TreeItem itemId={`image_${index}`} label={<span style={{ fontSize: "0.8rem"}}>{`Image_${index}`}</span>} key={index}>
+                <div className={styles.field_group}>
+                  <span>Position</span>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.locX} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "locX",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>X</span>
                   </div>
                   <div className={styles.input}>
-                    <label htmlFor="check">Y</label>
-                    <input type="number" name="shadowPosY" id="shadowPosY" value={shadowPosY} onChange={e => setShadowPosY(Number(e.target.value))} />
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.locY} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "locY",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>Y</span>
+                  </div>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.locZ} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "locZ",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>Z</span>
                   </div>
                 </div>
                 <div className={styles.field_group}>
-                  <span className={styles.title}>Blur</span>
+                  <span>Rotation</span>
                   <div className={styles.input}>
-                    <input type="number" name="shadowBlur" id="shadowBlur" value={shadowBlur} onChange={e => setShadowBlur(Number(e.target.value))} />
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.rotX} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "rotX",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>X</span>
+                  </div>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.rotY} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "rotY",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>Y</span>
+                  </div>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.rotZ} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "rotZ",
+                          Number(event.target.value) // Converte para número
+                        )
+                      } 
+                    />
+                    <span>Z</span>
                   </div>
                 </div>
                 <div className={styles.field_group}>
-                  <span className={styles.title}>Spread</span>
+                  <span>Scale</span>
                   <div className={styles.input}>
-                    <input type="number" name="shadowSpread" id="shadowSpread" value={shadowSpread} onChange={e => setShadowSpread(Number(e.target.value))} />
+                    <input 
+                      type="number" 
+                      value={image.scale} 
+                      min={0}
+                      max={100}
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "scale",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                <TreeItem itemId='shadow' label={<span style={{ fontSize: "0.8rem"}}>Shadow</span>}>
+                <div className={styles.field_group}>
+                  <span>Position</span>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.shadowPosX} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowPosX",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>X</span>
+                  </div>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      name="" 
+                      id="" 
+                      value={image.shadowPosY} 
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowPosY",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
+                    <span>Y</span>
+                  </div> 
+                </div>
+                <div className={styles.field_group}>
+                  <span>Opacity</span>
+                  <div className={styles.input}>
+                    <input 
+                      type="number" 
+                      value={image.shadowOpacity} 
+                      min={0}
+                      max={1}
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowOpacity",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
                   </div>
                 </div>
                 <div className={styles.field_group}>
-                  <span className={styles.title}>Opacity</span>
+                  <span>Spread</span>
                   <div className={styles.input}>
-                    <input type="number" name="shadowOpacity" id="shadowOpacity" value={shadowOpacity} onChange={e => setShadowOpacity(Number(e.target.value))} />
+                    <input 
+                      type="number" 
+                      value={image.shadowSpread} 
+                      min={0}
+                      max={100}
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowSpread",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
                   </div>
                 </div>
                 <div className={styles.field_group}>
-                  <span className={styles.title}>Color</span>
+                  <span>Blur</span>
                   <div className={styles.input}>
-                    <input type="color" name="shadowColor" id="shadowColor" value={shadowColor} onChange={handleColorChange} />
+                    <input 
+                      type="number" 
+                      value={image.shadowBlur} 
+                      min={0}
+                      max={100}
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowBlur",
+                          Number(event.target.value) // Converte para número
+                        )
+                      }
+                    />
                   </div>
                 </div>
-                  </>
-                }
-              </div>
-            </CustomCollapse>
-          ))}
-
+                <div className={styles.field_group}>
+                  <span>Color</span>
+                  <div className={styles.input}>
+                    <input 
+                      type="color" 
+                      value={image.shadowColor} 
+                      min={0}
+                      max={100}
+                      onChange={(event) =>
+                        updateImageProperty(
+                          index,
+                          "shadowColor",
+                          handleColorChange(event) // Converte para número
+                        )
+                      }
+                    />
+                  </div>
+                </div>
+                </TreeItem>
+              </TreeItem>
+            ))
+            }
+          </SimpleTreeView>
         </div>
       </aside>
-      <section className={styles.viewport} style={{ background: color }} ref={viewportRef}>
+      <section className={styles.viewport} ref={viewportRef}>
         {images.map((image, index) => (
           <img
             src={image.src}
@@ -260,7 +377,7 @@ useEffect(() => {
             className={styles.object}
             style={{
               transform: `rotateX(${image.rotX}deg) rotateY(${image.rotY}deg) rotateZ(${image.rotZ}deg) translate3d(${image.locX}px, ${image.locY}px, ${image.locZ}px) scale(${image.scale / 100})`,
-              boxShadow: shadow ? `${shadowPosX}px ${shadowPosY}px ${shadowBlur}px ${shadowSpread}px rgba(${rgbColor}, ${shadowOpacity})` : 'none'
+              boxShadow: shadow ? `${image.shadowPosX}px ${image.shadowPosY}px ${image.shadowBlur}px ${image.shadowSpread}px rgba(${image.shadowColor}, ${image.shadowOpacity})` : 'none'
             }}
             alt=""
           ></img>
